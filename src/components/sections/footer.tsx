@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Footer() {
@@ -8,9 +9,18 @@ export function Footer() {
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <span className="font-display text-2xl font-bold italic text-white">
-            ReSuply
-          </span>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/resuply-logo-green.jpeg"
+              alt="ReSuply logo"
+              width={40}
+              height={40}
+              className="size-10 rounded-xl object-cover"
+            />
+            <span className="font-display text-2xl font-bold italic text-white">
+              ReSuply
+            </span>
+          </div>
           <p className="mt-2 text-sm text-white/50">
             Local shopping, made simple.
           </p>

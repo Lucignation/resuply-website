@@ -6,13 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
+  getSpecialtyCategory,
   initialWaitlistValues,
+  parseSpecialtyNames,
   validateWaitlistForm,
   type WaitlistFormErrors,
   type WaitlistFormValues,
   type WaitlistRole,
 } from "@/lib/waitlist-validation";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Plus, Trash2, X } from "lucide-react";
+
+const specialtyExamples = [
+  { name: "General groceries", category: "General groceries" },
+  { name: "Meat", category: "Meat" },
+  { name: "Fish", category: "Fish" },
+  { name: "Rice", category: "Staples" },
+  { name: "Beans", category: "Staples" },
+  { name: "Tomatoes", category: "Produce" },
+  { name: "Red Pepper", category: "Produce" },
+];
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) {
@@ -26,6 +38,31 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
+function getMarketEntryErrors(
+  entry: WaitlistFormValues["marketSpecialties"][number]
+) {
+  const marketValue = entry.market.trim();
+  const specialtyValues = parseSpecialtyNames(entry.specialties);
+
+  let marketError: string | undefined;
+  let specialtiesError: string | undefined;
+
+  if (!marketValue) {
+    marketError = "Enter the market or store name.";
+  } else if (marketValue.length < 3) {
+    marketError = "Market or store name should be at least 3 characters.";
+  } else if (["lagos", "abuja"].includes(marketValue.toLowerCase())) {
+    marketError = "Enter a specific market or store, not just a city.";
+  }
+
+  if (specialtyValues.length === 0) {
+    specialtiesError = "Add at least one item you are good at buying there.";
+  } else if (specialtyValues.some((specialty) => specialty.length < 3)) {
+    specialtiesError = "Each item should be at least 3 characters.";
+  }
+
+  return { market: marketError, specialties: specialtiesError };
+}
 
 export function Waitlist() {
   const [role, setRole] = useState<WaitlistRole>("customer");
@@ -35,6 +72,7 @@ export function Waitlist() {
   const [touched, setTouched] = useState<
     Partial<Record<keyof WaitlistFormValues, boolean>>
   >({});
+  const [specialtyDrafts, setSpecialtyDrafts] = useState([""]);
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -49,7 +87,7 @@ export function Waitlist() {
       phone: true,
       email: true,
       city: true,
-      markets: role === "shopper",
+      marketSpecialties: role === "shopper",
     });
 
     if (Object.keys(nextErrors).length > 0) {
@@ -106,6 +144,118 @@ export function Waitlist() {
     if (touched[field]) {
       setErrors(validateWaitlistForm(nextValues, role));
     }
+  }
+
+  function updateMarketSpecialty(
+    index: number,
+    field: "market" | "specialties",
+    value: string
+  ) {
+    const nextValues = {
+      ...values,
+      marketSpecialties: values.marketSpecialties.map((entry, entryIndex) =>
+        entryIndex === index ? { ...entry, [field]: value } : entry
+      ),
+    };
+
+    setValues(nextValues);
+    setSubmitError("");
+
+    if (touched.marketSpecialties) {
+      setErrors(validateWaitlistForm(nextValues, role));
+    }
+  }
+
+  function addMarketSpecialty() {
+    const nextValues = {
+      ...values,
+      marketSpecialties: [
+        ...values.marketSpecialties,
+        { market: "", specialties: "" },
+      ],
+    };
+
+    setValues(nextValues);
+    setSpecialtyDrafts((prev) => [...prev, ""]);
+
+    if (touched.marketSpecialties) {
+      setErrors(validateWaitlistForm(nextValues, role));
+    }
+  }
+
+  function removeMarketSpecialty(index: number) {
+    const nextValues = {
+      ...values,
+      marketSpecialties: values.marketSpecialties.filter(
+        (_, entryIndex) => entryIndex !== index
+      ),
+    };
+
+    setValues(nextValues);
+    setSpecialtyDrafts((prev) =>
+      prev.filter((_, entryIndex) => entryIndex !== index)
+    );
+    setErrors(validateWaitlistForm(nextValues, role));
+  }
+
+  function updateSpecialtyDraft(index: number, value: string) {
+    setSpecialtyDrafts((prev) => {
+      const nextDrafts = [...prev];
+      nextDrafts[index] = value;
+      return nextDrafts;
+    });
+  }
+
+  function addSpecialtyToMarket(index: number, specialty: string) {
+    const nextSpecialties = specialty.trim();
+
+    if (!nextSpecialties) {
+      return;
+    }
+
+    const existingSpecialties = parseSpecialtyNames(
+      values.marketSpecialties[index]?.specialties ?? ""
+    );
+    const specialtiesToAdd = parseSpecialtyNames(nextSpecialties);
+    const mergedSpecialties = [...existingSpecialties];
+
+    for (const item of specialtiesToAdd) {
+      const alreadyExists = mergedSpecialties.some(
+        (specialty) => specialty.toLowerCase() === item.toLowerCase()
+      );
+
+      if (!alreadyExists) {
+        mergedSpecialties.push(item);
+      }
+    }
+
+    updateMarketSpecialty(index, "specialties", mergedSpecialties.join(", "));
+    updateSpecialtyDraft(index, "");
+    setTouched((prev) => ({ ...prev, marketSpecialties: true }));
+  }
+
+  function removeSpecialtyFromMarket(index: number, specialtyToRemove: string) {
+    const nextSpecialties = parseSpecialtyNames(
+      values.marketSpecialties[index]?.specialties ?? ""
+    ).filter(
+      (specialty) =>
+        specialty.toLowerCase() !== specialtyToRemove.toLowerCase()
+    );
+
+    updateMarketSpecialty(index, "specialties", nextSpecialties.join(", "));
+    setTouched((prev) => ({ ...prev, marketSpecialties: true }));
+  }
+
+  function handleSpecialtyKeyDown(
+    event: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    addSpecialtyToMarket(index, specialtyDrafts[index] ?? "");
   }
 
   function handleBlur(field: keyof WaitlistFormValues) {
@@ -259,26 +409,216 @@ export function Waitlist() {
               </div>
 
               {role === "shopper" && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="markets">
-                    Which markets or stores do you know well?
-                  </Label>
-                  <Input
-                    id="markets"
-                    name="markets"
-                    value={values.markets}
-                    onBlur={() => handleBlur("markets")}
-                    onChange={(e) => handleChange("markets", e.target.value)}
-                    placeholder="Separate each market or store with commas"
-                    {...inputState("markets")}
-                  />
-                  <p className="text-xs text-[var(--ink)]/55">
-                    Example: Mile 12 Market, Shoprite Sangotedo, Balogun Market
-                  </p>
-                  <FieldError
-                    id="markets-error"
-                    message={touched.markets ? errors.markets : undefined}
-                  />
+                <div className="rounded-2xl border border-[var(--ink)]/10 bg-[var(--cream)]/55 p-5">
+                  <div className="mb-5">
+                    <p className="text-sm font-semibold text-[var(--ink)]">
+                      Shopper matching details
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--ink)]/60">
+                      This helps us match customers with shoppers by market and
+                      what they are best at buying.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    {values.marketSpecialties.map((entry, index) => (
+                      <div key={index}>
+                        {(() => {
+                          const entryErrors = getMarketEntryErrors(entry);
+                          const showErrors = Boolean(touched.marketSpecialties);
+                          const marketError = showErrors
+                            ? entryErrors.market
+                            : undefined;
+                          const specialtyError = showErrors
+                            ? entryErrors.specialties
+                            : undefined;
+
+                          return (
+                            <div
+                              className={cn(
+                                "rounded-2xl border bg-white p-4",
+                                marketError || specialtyError
+                                  ? "border-[var(--terracotta-dark)]/45"
+                                  : "border-[var(--ink)]/10"
+                              )}
+                            >
+                              <div className="mb-4 flex items-center justify-between gap-3">
+                                <p className="text-sm font-semibold text-[var(--ink)]">
+                                  Market / Store {index + 1}
+                                </p>
+                                {values.marketSpecialties.length > 1 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeMarketSpecialty(index)
+                                    }
+                                    className="inline-flex size-9 items-center justify-center rounded-full text-[var(--ink)]/45 transition hover:bg-[var(--cream-dark)] hover:text-[var(--terracotta-dark)]"
+                                    aria-label={`Remove market ${index + 1}`}
+                                  >
+                                    <Trash2 className="size-4" />
+                                  </button>
+                                ) : null}
+                              </div>
+
+                              <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-2">
+                                  <Label htmlFor={`market-${index}`}>
+                                    Market or store
+                                  </Label>
+                                  <Input
+                                    id={`market-${index}`}
+                                    value={entry.market}
+                                    onBlur={() =>
+                                      handleBlur("marketSpecialties")
+                                    }
+                                    onChange={(e) =>
+                                      updateMarketSpecialty(
+                                        index,
+                                        "market",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="e.g. Mile 12 Market"
+                                    aria-invalid={Boolean(marketError)}
+                                    aria-describedby={
+                                      marketError
+                                        ? `market-${index}-error`
+                                        : undefined
+                                    }
+                                    className={cn(
+                                      marketError &&
+                                        "border-[var(--terracotta-dark)] focus-visible:border-[var(--terracotta-dark)]"
+                                    )}
+                                  />
+                                  <FieldError
+                                    id={`market-${index}-error`}
+                                    message={marketError}
+                                  />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                  <Label htmlFor={`specialties-${index}`}>
+                                    Items you are best at buying there
+                                  </Label>
+
+                                  {parseSpecialtyNames(entry.specialties)
+                                    .length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                      {parseSpecialtyNames(
+                                        entry.specialties
+                                      ).map((specialty) => (
+                                        <span
+                                          key={specialty}
+                                          className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[var(--market-green)]/20 bg-[var(--sage)] px-3 py-1 text-sm font-semibold text-[var(--market-green)]"
+                                        >
+                                          {specialty}
+                                          <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--market-green)]/65">
+                                            {getSpecialtyCategory(specialty)}
+                                          </span>
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              removeSpecialtyFromMarket(
+                                                index,
+                                                specialty
+                                              )
+                                            }
+                                            className="inline-flex size-5 items-center justify-center rounded-full bg-white/70 text-[var(--market-green)] transition hover:bg-white hover:text-[var(--terracotta-dark)]"
+                                            aria-label={`Remove ${specialty}`}
+                                          >
+                                            <X className="size-3" />
+                                          </button>
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : null}
+
+                                  <Input
+                                    id={`specialties-${index}`}
+                                    value={specialtyDrafts[index] ?? ""}
+                                    onBlur={() =>
+                                      handleBlur("marketSpecialties")
+                                    }
+                                    onKeyDown={(event) =>
+                                      handleSpecialtyKeyDown(event, index)
+                                    }
+                                    onChange={(e) =>
+                                      updateSpecialtyDraft(
+                                        index,
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Type an item and press Enter"
+                                    aria-invalid={Boolean(specialtyError)}
+                                    aria-describedby={
+                                      specialtyError
+                                        ? `specialties-${index}-error`
+                                        : undefined
+                                    }
+                                    className={cn(
+                                      specialtyError &&
+                                        "border-[var(--terracotta-dark)] focus-visible:border-[var(--terracotta-dark)]"
+                                    )}
+                                  />
+                                  <div className="flex flex-wrap gap-2">
+                                    {specialtyExamples.map((specialty) => (
+                                      <button
+                                        key={specialty.name}
+                                        type="button"
+                                        onClick={() =>
+                                          addSpecialtyToMarket(
+                                            index,
+                                            specialty.name
+                                          )
+                                        }
+                                        className="inline-flex items-center gap-2 rounded-full border border-[var(--market-green)]/15 bg-[var(--sage)]/60 px-3 py-1 text-xs font-medium text-[var(--market-green)] transition hover:border-[var(--market-green)]/40 hover:bg-[var(--sage)]"
+                                      >
+                                        {specialty.name}
+                                        <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--market-green)]/65">
+                                          {specialty.category}
+                                        </span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <p className="text-xs text-[var(--ink)]/55">
+                                    Click a suggestion or type your own item and
+                                    press Enter.
+                                  </p>
+                                  <FieldError
+                                    id={`specialties-${index}-error`}
+                                    message={specialtyError}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addMarketSpecialty}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[var(--market-green)]/25 bg-white px-4 text-sm font-semibold text-[var(--market-green)] transition hover:border-[var(--market-green)]/50 hover:bg-[var(--sage)]"
+                    >
+                      <Plus className="size-4" />
+                      Add another market/store
+                    </button>
+
+                    <div>
+                      <p className="text-xs leading-relaxed text-[var(--ink)]/55">
+                        Example: Mile 12 Market → rice, beans, tomatoes, red
+                        pepper. Balogun Market → fabrics, clothes, shoes.
+                      </p>
+                      <FieldError
+                        id="marketSpecialties-error"
+                        message={
+                          touched.marketSpecialties
+                            ? errors.marketSpecialties
+                            : undefined
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 

@@ -26,6 +26,14 @@ export const metadata: Metadata = {
   title: "ReSuply — Shop from anywhere. Trust the local hand that knows the market.",
   description:
     "ReSuply connects you with verified personal shoppers who buy items from markets, supermarkets, pharmacies and local stores near you — and earn an income doing it.",
+  openGraph: {
+    title: "ReSuply",
+    description:
+      "Shop from anywhere with trusted local shoppers who know the market.",
+    url: "https://useresuply.com",
+    siteName: "ReSuply",
+    images: ["/resuply-logo-green.jpeg"],
+  },
 };
 
 export default function RootLayout({

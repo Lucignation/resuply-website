@@ -1,5 +1,8 @@
 import { Resend } from "resend";
-import type { WaitlistRole } from "@/lib/waitlist-validation";
+import type {
+  CategorizedShopperMarketSpecialty,
+  WaitlistRole,
+} from "@/lib/waitlist-validation";
 
 type RegistrationEmailInput = {
   email: string;
@@ -10,7 +13,7 @@ type RegistrationEmailInput = {
 
 type SignupNotificationInput = RegistrationEmailInput & {
   phone: string;
-  markets: string;
+  marketSpecialties: CategorizedShopperMarketSpecialty[];
 };
 
 let resendClient: Resend | undefined;
@@ -85,9 +88,7 @@ export async function sendRegistrationEmail({
         <div style="max-width: 760px; margin: 0 auto; padding: 24px 18px 32px;">
           <div style="background: #ffffff; border: 1px solid #dedede; border-top: 8px solid #1f253d; padding: 54px 34px 44px;">
             <div style="text-align: center;">
-              <div style="display: inline-block; width: 68px; height: 68px; border-radius: 0 42px 42px 42px; background: #1b4332; position: relative;">
-                <div style="width: 32px; height: 18px; border-radius: 100% 0 100% 0; background: #ffffff; margin: 34px 0 0 12px; transform: rotate(-28deg);"></div>
-              </div>
+              <img src="${siteUrl}resuply-logo-green.jpeg" width="76" height="76" alt="ReSuply logo" style="display: inline-block; border: 0; border-radius: 18px; width: 76px; height: 76px;" />
               <h1 style="margin: 42px 0 72px; color: #555555; font-size: 36px; line-height: 1.2; font-weight: 800;">
                 ${copy.headline}
               </h1>
@@ -140,7 +141,7 @@ export async function sendSignupNotificationEmail({
   role,
   city,
   phone,
-  markets,
+  marketSpecialties,
 }: SignupNotificationInput) {
   const resend = getResend();
   const recipient =
@@ -149,9 +150,31 @@ export async function sendSignupNotificationEmail({
   const safeEmail = escapeHtml(email);
   const safePhone = escapeHtml(phone);
   const safeCity = escapeHtml(city);
-  const safeMarkets = escapeHtml(markets);
-  const marketLine =
-    role === "shopper" ? `<p><strong>Markets:</strong> ${safeMarkets}</p>` : "";
+  const marketSpecialtyHtml =
+    role === "shopper"
+      ? `<div><strong>Market specialties:</strong><ul>${marketSpecialties
+          .map(
+            (entry) => `<li><strong>${escapeHtml(
+              entry.market
+            )}</strong><ul>${entry.specialties
+              .map(
+                (specialty) =>
+                  `<li>${escapeHtml(specialty.name)} (${escapeHtml(
+                    specialty.category
+                  )})</li>`
+              )
+              .join("")}</ul></li>`
+          )
+          .join("")}</ul></div>`
+      : "";
+  const marketSpecialtyText = marketSpecialties
+    .map(
+      (entry) =>
+        `${entry.market}: ${entry.specialties
+          .map((specialty) => `${specialty.name} (${specialty.category})`)
+          .join(", ")}`
+    )
+    .join("; ");
 
   const { error } = await resend.emails.send({
     from: getSender(),
@@ -165,7 +188,7 @@ export async function sendSignupNotificationEmail({
         <p><strong>Phone:</strong> ${safePhone}</p>
         <p><strong>City:</strong> ${safeCity}</p>
         <p><strong>Role:</strong> ${role}</p>
-        ${marketLine}
+        ${marketSpecialtyHtml}
       </div>
     `,
     text: [
@@ -175,7 +198,7 @@ export async function sendSignupNotificationEmail({
       `Phone: ${phone}`,
       `City: ${city}`,
       `Role: ${role}`,
-      role === "shopper" ? `Markets: ${markets}` : "",
+      role === "shopper" ? `Market specialties: ${marketSpecialtyText}` : "",
     ]
       .filter(Boolean)
       .join("\n"),

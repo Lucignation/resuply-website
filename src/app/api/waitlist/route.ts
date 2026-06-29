@@ -1,7 +1,7 @@
 import {
+  normalizeMarketSpecialties,
   normalizeEmail,
   normalizePhone,
-  parseMarketNames,
   validateWaitlistForm,
   type WaitlistFormValues,
   type WaitlistRole,
@@ -12,9 +12,23 @@ import {
   sendSignupNotificationEmail,
 } from "@/lib/email";
 
-type WaitlistPayload = WaitlistFormValues & {
+type WaitlistPayload = Omit<WaitlistFormValues, "marketSpecialties"> & {
   role: WaitlistRole;
+  marketSpecialties?: WaitlistFormValues["marketSpecialties"];
 };
+
+function hasValidMarketSpecialties(value: unknown) {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (entry) =>
+        entry &&
+        typeof entry === "object" &&
+        typeof (entry as { market?: unknown }).market === "string" &&
+        typeof (entry as { specialties?: unknown }).specialties === "string"
+    )
+  );
+}
 
 function isPayload(value: unknown): value is WaitlistPayload {
   if (!value || typeof value !== "object") {
@@ -29,7 +43,10 @@ function isPayload(value: unknown): value is WaitlistPayload {
     typeof payload.phone === "string" &&
     typeof payload.email === "string" &&
     typeof payload.city === "string" &&
-    typeof payload.markets === "string"
+    (payload.role === "customer"
+      ? payload.marketSpecialties === undefined ||
+        hasValidMarketSpecialties(payload.marketSpecialties)
+      : hasValidMarketSpecialties(payload.marketSpecialties))
   );
 }
 
@@ -46,7 +63,12 @@ export async function POST(request: Request) {
     return Response.json({ message: "Invalid form payload." }, { status: 400 });
   }
 
-  const errors = validateWaitlistForm(body, body.role);
+  const formValues: WaitlistFormValues = {
+    ...body,
+    marketSpecialties: body.marketSpecialties ?? [],
+  };
+
+  const errors = validateWaitlistForm(formValues, body.role);
 
   if (Object.keys(errors).length > 0) {
     return Response.json({ errors }, { status: 422 });
@@ -56,6 +78,10 @@ export async function POST(request: Request) {
   const city = body.city.trim();
   const email = normalizeEmail(body.email);
   const phone = normalizePhone(body.phone);
+  const marketSpecialties =
+    body.role === "shopper"
+      ? normalizeMarketSpecialties(formValues.marketSpecialties)
+      : [];
 
   try {
     const sql = getSql();
@@ -97,7 +123,8 @@ export async function POST(request: Request) {
       `) as Array<{ id: string }>;
       const [{ id: shopperId }] = shopperRows;
 
-      for (const marketName of parseMarketNames(body.markets)) {
+      for (const entry of marketSpecialties) {
+        const marketName = entry.market;
         const marketRows = (await sql`
           insert into markets (name, city)
           values (${marketName}, ${city})
@@ -109,11 +136,34 @@ export async function POST(request: Request) {
         `) as Array<{ id: string }>;
         const [{ id: marketId }] = marketRows;
 
-        await sql`
+        const shopperMarketRows = (await sql`
           insert into shopper_markets (shopper_id, market_id)
           values (${shopperId}, ${marketId})
-          on conflict (shopper_id, market_id) do nothing
-        `;
+          on conflict (shopper_id, market_id) do update set
+            shopper_id = excluded.shopper_id
+          returning id
+        `) as Array<{ id: string }>;
+        const [{ id: shopperMarketId }] = shopperMarketRows;
+
+        for (const specialty of entry.specialties) {
+          const category = specialty.category;
+          const specialtyRows = (await sql`
+            insert into specialties (name, category)
+            values (${specialty.name}, ${category})
+            on conflict (lower(name)) do update set
+              name = excluded.name,
+              category = excluded.category,
+              updated_at = now()
+            returning id
+          `) as Array<{ id: string }>;
+          const [{ id: specialtyId }] = specialtyRows;
+
+          await sql`
+            insert into shopper_market_specialties (shopper_market_id, specialty_id)
+            values (${shopperMarketId}, ${specialtyId})
+            on conflict (shopper_market_id, specialty_id) do nothing
+          `;
+        }
       }
     }
 
@@ -142,7 +192,7 @@ export async function POST(request: Request) {
       role: body.role,
       city,
       phone,
-      markets: body.markets,
+      marketSpecialties,
     });
   } catch (error) {
     console.error("Failed to save waitlist submission", error);

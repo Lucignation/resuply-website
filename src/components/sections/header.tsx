@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -5,7 +6,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--ink)]/8 bg-[var(--cream)]/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/#top" className="flex items-center gap-2">
+        <Link href="/#top" className="flex items-center gap-3">
+          <Image
+            src="/resuply-logo-green.jpeg"
+            alt="ReSuply logo"
+            width={40}
+            height={40}
+            priority
+            className="size-10 rounded-xl object-cover shadow-sm"
+          />
           <span className="font-display text-2xl font-bold italic tracking-tight text-[var(--market-green)]">
             ReSuply
           </span>

@@ -43,4 +43,31 @@ pg_restore -v -O -d "$NEW_DATABASE_URL" resuply_core.bak
 - `shoppers`: people applying to become shoppers
 - `markets`: market/store catalog
 - `shopper_markets`: shopper-to-market categorization
+- `specialties`: item types shoppers are good at buying, grouped by category
+- `shopper_market_specialties`: market-specific shopper specialties
 - `launch_subscribers`: launch email audience
+
+## Example shopper query
+
+Fetch shoppers by city, market, item, or category:
+
+```sql
+select
+  s.full_name,
+  s.email,
+  s.phone,
+  s.city,
+  m.name as market_name,
+  sp.name as specialty_name,
+  sp.category as specialty_category
+from shoppers s
+join shopper_markets sm on sm.shopper_id = s.id
+join markets m on m.id = sm.market_id
+join shopper_market_specialties sms on sms.shopper_market_id = sm.id
+join specialties sp on sp.id = sms.specialty_id
+where s.status = 'pending'
+  and lower(s.city) = lower('Lagos')
+  and lower(m.name) = lower('Mile 12 Market')
+  and lower(sp.category) = lower('Produce')
+order by s.created_at desc;
+```
