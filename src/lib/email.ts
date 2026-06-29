@@ -1,4 +1,6 @@
 import { Resend } from "resend";
+import { supportEmail } from "@/lib/contact";
+import type { ContactFormValues } from "@/lib/contact-validation";
 import type {
   CategorizedShopperMarketSpecialty,
   WaitlistRole,
@@ -16,6 +18,8 @@ type SignupNotificationInput = RegistrationEmailInput & {
   phone: string;
   marketSpecialties: CategorizedShopperMarketSpecialty[];
 };
+
+type ContactMessageInput = ContactFormValues;
 
 let resendClient: Resend | undefined;
 
@@ -36,6 +40,10 @@ function getResend() {
 
 function getSender() {
   return process.env.EMAIL_FROM ?? "ReSuply <hello@useresuply.com>";
+}
+
+function getContactRecipient() {
+  return process.env.CONTACT_NOTIFICATION_EMAIL ?? supportEmail;
 }
 
 function escapeHtml(value: string) {
@@ -221,6 +229,53 @@ export async function sendSignupNotificationEmail({
     ]
       .filter(Boolean)
       .join("\n"),
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function sendContactMessageEmail({
+  fullName,
+  phone,
+  email,
+  interest,
+  message,
+}: ContactMessageInput) {
+  const resend = getResend();
+  const recipient = getContactRecipient();
+  const safeFullName = escapeHtml(fullName);
+  const safePhone = escapeHtml(phone);
+  const safeEmail = escapeHtml(email);
+  const safeMessage = escapeHtml(message);
+  const interestLabel =
+    interest === "shopper" ? "Personal Shopper" : "Customer";
+
+  const { error } = await resend.emails.send({
+    from: getSender(),
+    to: recipient,
+    subject: `New ReSuply contact message from ${fullName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #211d1a;">
+        <h1>New ReSuply contact message</h1>
+        <p><strong>Name:</strong> ${safeFullName}</p>
+        <p><strong>Phone:</strong> ${safePhone}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Interested as:</strong> ${interestLabel}</p>
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-line;">${safeMessage}</p>
+      </div>
+    `,
+    text: [
+      "New ReSuply contact message",
+      `Name: ${fullName}`,
+      `Phone: ${phone}`,
+      `Email: ${email}`,
+      `Interested as: ${interestLabel}`,
+      "Message:",
+      message,
+    ].join("\n"),
   });
 
   if (error) {

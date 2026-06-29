@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { whatsappUrl } from "@/lib/contact";
+import { contactHref } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 import {
   getSpecialtyCategory,
@@ -18,7 +18,7 @@ import {
 import {
   ArrowRight,
   CheckCircle2,
-  MessageCircle,
+  Mail,
   Plus,
   Trash2,
   X,
@@ -322,9 +322,9 @@ export function Waitlist() {
           </p>
           <div className="mt-6 flex justify-center">
             <Button asChild variant="outline" size="sm">
-              <a href={whatsappUrl}>
-                <MessageCircle className="size-4" />
-                Chat with us on WhatsApp
+              <a href={contactHref}>
+                <Mail className="size-4" />
+                Contact ReSuply
               </a>
             </Button>
           </div>

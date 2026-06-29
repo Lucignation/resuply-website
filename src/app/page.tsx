@@ -7,6 +7,7 @@ import { ShopperOpportunity } from "@/components/sections/shopper-opportunity";
 import { TrustSafety } from "@/components/sections/trust-safety";
 import { UseCases } from "@/components/sections/use-cases";
 import { Waitlist } from "@/components/sections/waitlist";
+import { ContactSection } from "@/components/sections/contact";
 import { Footer } from "@/components/sections/footer";
 
 export default function Home() {
@@ -22,6 +23,7 @@ export default function Home() {
         <TrustSafety />
         <UseCases />
         <Waitlist />
+        <ContactSection />
       </main>
       <Footer />
     </>

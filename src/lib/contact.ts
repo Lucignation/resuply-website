@@ -1,2 +1,2 @@
-export const whatsappUrl =
-  process.env.NEXT_PUBLIC_WHATSAPP_URL ?? "/contact";
+export const supportEmail = "support@useresuply.com";
+export const contactHref = "#contact";

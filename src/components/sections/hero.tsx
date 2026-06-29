@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { whatsappUrl } from "@/lib/contact";
-import { ArrowRight, MapPin, MessageCircle } from "lucide-react";
+import { contactHref } from "@/lib/contact";
+import { ArrowRight, Mail, MapPin } from "lucide-react";
 
 const listItems = [
   { item: "Tomatoes & pepper mix", market: "Mile 12 Market", price: "₦3,500" },
@@ -60,9 +60,9 @@ export function Hero() {
               </a>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href={whatsappUrl}>
-                <MessageCircle className="size-4" />
-                Chat with us on WhatsApp
+              <a href={contactHref}>
+                <Mail className="size-4" />
+                Contact ReSuply
               </a>
             </Button>
             <Button asChild size="lg" variant="ghost">

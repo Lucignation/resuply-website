@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { supportEmail } from "@/lib/contact";
 
 export function Footer() {
   return (
@@ -23,6 +24,16 @@ export function Footer() {
           </div>
           <p className="mt-2 text-sm text-white/50">
             Local shopping, made simple.
+          </p>
+          <p className="mt-3 text-sm text-white/55">
+            Questions? Contact us at{" "}
+            <a
+              href={`mailto:${supportEmail}`}
+              className="font-semibold text-white/80 transition-colors hover:text-white"
+            >
+              {supportEmail}
+            </a>
+            .
           </p>
         </div>
 
