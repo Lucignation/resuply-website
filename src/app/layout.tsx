@@ -26,7 +26,7 @@ const siteTitle =
 const siteDescription =
   "ReSuply connects you with verified personal shoppers who buy items from markets, supermarkets, pharmacies, and local stores near you. Join the waitlist for Lagos and Abuja.";
 const siteUrl = "https://useresuply.com/";
-const previewImage = "https://useresuply.com/resuply-share-preview.jpeg";
+const previewImage = "https://useresuply.com/resuply-logo-green.jpeg";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -46,14 +46,14 @@ export const metadata: Metadata = {
     images: [
       {
         url: previewImage,
-        width: 1200,
-        height: 630,
-        alt: "ReSuply - shop from anywhere with trusted local shoppers.",
+        width: 640,
+        height: 640,
+        alt: "ReSuply logo.",
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: siteTitle,
     description: siteDescription,
     images: [previewImage],
