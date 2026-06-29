@@ -25,10 +25,11 @@ const siteTitle =
   "ReSuply | Shop from anywhere. Trust the local hand that knows the market.";
 const siteDescription =
   "ReSuply connects you with verified personal shoppers who buy items from markets, supermarkets, pharmacies, and local stores near you. Join the waitlist for Lagos and Abuja.";
-const previewImage = "/resuply-share-preview.jpeg";
+const siteUrl = "https://useresuply.com/";
+const previewImage = "https://useresuply.com/resuply-share-preview.jpeg";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://useresuply.com"),
+  metadataBase: new URL(siteUrl),
   applicationName: "ReSuply",
   title: siteTitle,
   description: siteDescription,
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: siteTitle,
     description: siteDescription,
-    url: "/",
+    url: siteUrl,
     siteName: "ReSuply",
     locale: "en_NG",
     type: "website",
