@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { contactHref } from "@/lib/contact";
+import { contactHref, contactOpenEventName } from "@/lib/contact";
 import { ArrowRight, Mail, MapPin } from "lucide-react";
 
 const listItems = [
@@ -14,6 +14,11 @@ const listItems = [
 
 export function Hero() {
   const [checked, setChecked] = useState<number[]>([]);
+
+  function handleContactClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    window.dispatchEvent(new Event(contactOpenEventName));
+  }
 
   useEffect(() => {
     const timers = listItems.map((_, i) =>
@@ -60,7 +65,7 @@ export function Hero() {
               </a>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href={contactHref}>
+              <a href={contactHref} onClick={handleContactClick}>
                 <Mail className="size-4" />
                 Contact ReSuply
               </a>

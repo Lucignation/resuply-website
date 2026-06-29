@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { supportEmail } from "@/lib/contact";
+import { contactOpenEventName, supportEmail } from "@/lib/contact";
 import {
   initialContactFormValues,
   validateContactForm,
@@ -13,7 +13,7 @@ import {
   type ContactFormValues,
   type ContactInterest,
 } from "@/lib/contact-validation";
-import { ArrowRight, CheckCircle2, Mail } from "lucide-react";
+import { ArrowRight, CheckCircle2, Mail, X } from "lucide-react";
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) {
@@ -28,6 +28,146 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 }
 
 export function ContactSection() {
+  return (
+    <section
+      id="contact"
+      className="scroll-mt-24 bg-[var(--cream-dark)] px-4 py-14 sm:px-6 sm:py-24"
+    >
+      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+        <ContactIntro />
+        <div className="rounded-3xl border border-[var(--ink)]/10 bg-white p-5 shadow-sm sm:p-8">
+          <ContactForm />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function ContactModal() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    function handleOpen() {
+      setIsOpen(true);
+    }
+
+    window.addEventListener(contactOpenEventName, handleOpen);
+
+    return () => {
+      window.removeEventListener(contactOpenEventName, handleOpen);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-[var(--ink)]/45 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          setIsOpen(false);
+        }
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-modal-title"
+        className="max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl border border-[var(--ink)]/10 bg-[var(--cream)] shadow-2xl sm:max-w-3xl sm:rounded-3xl"
+      >
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[var(--ink)]/8 bg-[var(--cream)] px-5 py-4 sm:px-7">
+          <div>
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[var(--terracotta)]">
+              Contact
+            </span>
+            <h2
+              id="contact-modal-title"
+              className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)] sm:text-3xl"
+            >
+              Have questions about ReSuply?
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-[var(--ink)]/10 bg-white text-[var(--ink)]/65 transition hover:text-[var(--ink)]"
+            aria-label="Close contact form"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+
+        <div className="grid gap-5 p-5 sm:p-7 lg:grid-cols-[0.78fr_1.22fr]">
+          <ContactIntro compact />
+          <div className="rounded-2xl border border-[var(--ink)]/10 bg-white p-4 shadow-sm sm:p-6">
+            <ContactForm />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContactIntro({ compact = false }: { compact?: boolean }) {
+  return (
+    <div>
+      {!compact ? (
+        <span className="font-mono text-xs font-semibold uppercase tracking-widest text-[var(--terracotta)]">
+          Contact
+        </span>
+      ) : null}
+      {!compact ? (
+        <h2 className="mt-4 font-display text-3xl font-semibold leading-tight tracking-tight text-[var(--ink)] sm:text-5xl">
+          Have questions
+          <span className="italic"> about ReSuply?</span>
+        </h2>
+      ) : null}
+      <p
+        className={cn(
+          "max-w-lg text-base leading-relaxed text-[var(--ink)]/65",
+          compact ? "mt-0" : "mt-5"
+        )}
+      >
+        Ask about joining the waitlist, earning as a personal shopper, or how
+        ReSuply will work for local shopping across Nigerian cities.
+      </p>
+      <a
+        href={`mailto:${supportEmail}`}
+        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--market-green)] transition-colors hover:text-[var(--market-green-dark)]"
+      >
+        <Mail className="size-4" />
+        {supportEmail}
+      </a>
+    </div>
+  );
+}
+
+function ContactForm() {
   const [values, setValues] = useState<ContactFormValues>(
     initialContactFormValues
   );
@@ -124,50 +264,20 @@ export function ContactSection() {
   }
 
   return (
-    <section
-      id="contact"
-      className="scroll-mt-24 bg-[var(--cream-dark)] px-4 py-14 sm:px-6 sm:py-24"
-    >
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-        <div>
-          <span className="font-mono text-xs font-semibold uppercase tracking-widest text-[var(--terracotta)]">
-            Contact
-          </span>
-          <h2 className="mt-4 font-display text-3xl font-semibold leading-tight tracking-tight text-[var(--ink)] sm:text-5xl">
-            Have questions
-            <span className="italic"> about ReSuply?</span>
-          </h2>
-          <p className="mt-5 max-w-lg text-base leading-relaxed text-[var(--ink)]/65">
-            Ask about joining the waitlist, earning as a personal shopper, or
-            how ReSuply will work for local shopping across Nigerian cities.
+    <>
+      {submitted ? (
+        <div className="flex flex-col items-center py-8 text-center">
+          <CheckCircle2 className="size-12 text-[var(--market-green)]" />
+          <h3 className="mt-5 font-display text-2xl font-semibold text-[var(--ink)]">
+            Message sent.
+          </h3>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-[var(--ink)]/60">
+            Thanks for reaching out. The ReSuply team will reply as soon as
+            possible.
           </p>
-          <a
-            href={`mailto:${supportEmail}`}
-            className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--market-green)] transition-colors hover:text-[var(--market-green-dark)]"
-          >
-            <Mail className="size-4" />
-            {supportEmail}
-          </a>
         </div>
-
-        <div className="rounded-3xl border border-[var(--ink)]/10 bg-white p-5 shadow-sm sm:p-8">
-          {submitted ? (
-            <div className="flex flex-col items-center py-8 text-center">
-              <CheckCircle2 className="size-12 text-[var(--market-green)]" />
-              <h3 className="mt-5 font-display text-2xl font-semibold text-[var(--ink)]">
-                Message sent.
-              </h3>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-[var(--ink)]/60">
-                Thanks for reaching out. The ReSuply team will reply as soon as
-                possible.
-              </p>
-            </div>
-          ) : (
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="flex flex-col gap-5"
-            >
+      ) : (
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="contactFullName">Full name</Label>
@@ -298,9 +408,7 @@ export function ContactSection() {
                 <ArrowRight className="size-4" />
               </Button>
             </form>
-          )}
-        </div>
-      </div>
-    </section>
+      )}
+    </>
   );
 }

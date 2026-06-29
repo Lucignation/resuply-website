@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { contactHref } from "@/lib/contact";
+import { contactHref, contactOpenEventName } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 import {
   getSpecialtyCategory,
@@ -84,6 +84,11 @@ export function Waitlist() {
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  function handleContactClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    window.dispatchEvent(new Event(contactOpenEventName));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -322,7 +327,7 @@ export function Waitlist() {
           </p>
           <div className="mt-6 flex justify-center">
             <Button asChild variant="outline" size="sm">
-              <a href={contactHref}>
+              <a href={contactHref} onClick={handleContactClick}>
                 <Mail className="size-4" />
                 Contact ReSuply
               </a>
