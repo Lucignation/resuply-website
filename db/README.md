@@ -13,6 +13,7 @@ DATABASE_URL="postgresql://USER:PASSWORD@HOST/resuply_core?sslmode=require"
 RESEND_API_KEY="re_xxxxxxxxx"
 EMAIL_FROM="ReSuply <hello@useresuply.com>"
 SIGNUP_NOTIFICATION_EMAIL="resuplytech@gmail.com"
+NEXT_PUBLIC_WHATSAPP_URL="https://wa.me/234XXXXXXXXXX?text=Hi%20ReSuply%2C%20I%20have%20a%20question"
 ```
 
 ## 2. Run the schema
@@ -39,13 +40,13 @@ pg_restore -v -O -d "$NEW_DATABASE_URL" resuply_core.bak
 
 ## Tables
 
-- `customers`: people who want to shop with ReSuply
-- `shoppers`: people applying to become shoppers
+- `customers`: people who want to shop with ReSuply, including likely first purchase intent
+- `shoppers`: people applying to earn as personal shoppers, including the place they know well
 - `markets`: market/store catalog
 - `shopper_markets`: shopper-to-market categorization
 - `specialties`: item types shoppers are good at buying, grouped by category
 - `shopper_market_specialties`: market-specific shopper specialties
-- `launch_subscribers`: launch email audience
+- `launch_subscribers`: launch email audience with role-specific signup context
 
 ## Example shopper query
 

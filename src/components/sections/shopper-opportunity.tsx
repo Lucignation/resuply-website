@@ -7,7 +7,7 @@ const perks = [
   "Build a shopper profile with real ratings",
   "Earn per completed order, plus tips",
   "Get repeat customers who request you by name",
-  "Grow it into your own personal shopping business",
+  "Grow your market and store knowledge into a real service",
 ];
 
 export function ShopperOpportunity() {
@@ -28,18 +28,18 @@ export function ShopperOpportunity() {
             For personal shoppers
           </span>
           <h2 className="mt-4 font-display text-4xl font-semibold italic leading-tight tracking-tight text-white sm:text-5xl">
-            Turn local shopping
+            Turn your local market
             <br />
-            knowledge into income.
+            and store knowledge into income.
           </h2>
           <p className="mt-5 max-w-md text-white/70">
-            You already know your market better than anyone — which stall has
-            the freshest tomatoes, who gives the best price on rice. ReSuply
-            turns that knowledge into a real income stream.
+            Earn money by helping people shop from the markets, supermarkets,
+            pharmacies and wellness stores, malls, and local stores you already
+            know well.
           </p>
           <Button asChild size="lg" variant="terracotta" className="mt-8">
             <a href="#waitlist">
-              Apply to Become a Shopper <ArrowRight className="size-4" />
+              Earn as a Personal Shopper <ArrowRight className="size-4" />
             </a>
           </Button>
         </div>

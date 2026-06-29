@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, MapPin } from "lucide-react";
+import { whatsappUrl } from "@/lib/contact";
+import { ArrowRight, MapPin, MessageCircle } from "lucide-react";
 
 const listItems = [
   { item: "Tomatoes & pepper mix", market: "Mile 12 Market", price: "₦3,500" },
   { item: "Rice, 1 bag (50kg)", market: "Garki Market", price: "₦68,000" },
-  { item: "Amoxicillin, 1 pack", market: "MedPlus Pharmacy", price: "₦2,100" },
+  { item: "Wellness items", market: "MedPlus Pharmacy", price: "₦8,400" },
   { item: "Ankara fabric, 6 yards", market: "Wuse Market", price: "₦15,000" },
 ];
 
@@ -47,9 +48,9 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-md text-lg leading-relaxed text-[var(--ink)]/70">
-            ReSuply connects you with verified personal shoppers who buy items
-            from markets, supermarkets, pharmacies, and stores near you —
-            delivered the same day.
+            ReSuply is a trusted local shopping marketplace connecting
+            customers with verified personal shoppers for markets, supermarkets,
+            pharmacies and wellness stores, malls, local stores, and more.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-4">
@@ -59,12 +60,19 @@ export function Hero() {
               </a>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="#shoppers">Become a Shopper</a>
+              <a href={whatsappUrl}>
+                <MessageCircle className="size-4" />
+                Chat with us on WhatsApp
+              </a>
+            </Button>
+            <Button asChild size="lg" variant="ghost">
+              <a href="#shoppers">Earn as a Personal Shopper</a>
             </Button>
           </div>
 
-          <p className="mt-5 text-sm text-[var(--ink)]/50">
-            No app yet. Be first in line when we launch.
+          <p className="mt-5 max-w-lg text-sm leading-relaxed text-[var(--ink)]/55">
+            Join the waitlist to get early access when ReSuply launches in
+            Lagos, Abuja, and other major cities.
           </p>
         </div>
 

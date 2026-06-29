@@ -43,6 +43,8 @@ function isPayload(value: unknown): value is WaitlistPayload {
     typeof payload.phone === "string" &&
     typeof payload.email === "string" &&
     typeof payload.city === "string" &&
+    typeof payload.customerFirstPurchase === "string" &&
+    typeof payload.shopperKnownPlace === "string" &&
     (payload.role === "customer"
       ? payload.marketSpecialties === undefined ||
         hasValidMarketSpecialties(payload.marketSpecialties)
@@ -78,6 +80,10 @@ export async function POST(request: Request) {
   const city = body.city.trim();
   const email = normalizeEmail(body.email);
   const phone = normalizePhone(body.phone);
+  const customerFirstPurchase = body.customerFirstPurchase.trim();
+  const shopperKnownPlace = body.shopperKnownPlace.trim();
+  const signupContext =
+    body.role === "customer" ? customerFirstPurchase : shopperKnownPlace;
   const marketSpecialties =
     body.role === "shopper"
       ? normalizeMarketSpecialties(formValues.marketSpecialties)
@@ -100,23 +106,25 @@ export async function POST(request: Request) {
 
     if (body.role === "customer") {
       await sql`
-        insert into customers (full_name, email, phone, city, source)
-        values (${fullName}, ${email}, ${phone}, ${city}, 'landing_page')
+        insert into customers (full_name, email, phone, city, first_purchase_intent, source)
+        values (${fullName}, ${email}, ${phone}, ${city}, ${customerFirstPurchase}, 'landing_page')
         on conflict (email) do update set
           full_name = excluded.full_name,
           phone = excluded.phone,
           city = excluded.city,
+          first_purchase_intent = excluded.first_purchase_intent,
           source = excluded.source,
           updated_at = now()
       `;
     } else {
       const shopperRows = (await sql`
-        insert into shoppers (full_name, email, phone, city, status, source)
-        values (${fullName}, ${email}, ${phone}, ${city}, 'pending', 'landing_page')
+        insert into shoppers (full_name, email, phone, city, known_place_summary, status, source)
+        values (${fullName}, ${email}, ${phone}, ${city}, ${shopperKnownPlace}, 'pending', 'landing_page')
         on conflict (email) do update set
           full_name = excluded.full_name,
           phone = excluded.phone,
           city = excluded.city,
+          known_place_summary = excluded.known_place_summary,
           source = excluded.source,
           updated_at = now()
         returning id
@@ -168,13 +176,14 @@ export async function POST(request: Request) {
     }
 
     await sql`
-      insert into launch_subscribers (email, full_name, phone, city, role, source)
-      values (${email}, ${fullName}, ${phone}, ${city}, ${body.role}, 'landing_page')
+      insert into launch_subscribers (email, full_name, phone, city, role, signup_context, source)
+      values (${email}, ${fullName}, ${phone}, ${city}, ${body.role}, ${signupContext}, 'landing_page')
       on conflict (email) do update set
         full_name = excluded.full_name,
         phone = excluded.phone,
         city = excluded.city,
         role = excluded.role,
+        signup_context = excluded.signup_context,
         source = excluded.source,
         updated_at = now()
     `;
@@ -184,6 +193,7 @@ export async function POST(request: Request) {
       fullName,
       role: body.role,
       city,
+      signupContext,
     });
 
     await sendSignupNotificationEmail({
@@ -192,6 +202,7 @@ export async function POST(request: Request) {
       role: body.role,
       city,
       phone,
+      signupContext,
       marketSpecialties,
     });
   } catch (error) {

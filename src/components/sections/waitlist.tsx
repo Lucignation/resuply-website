@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { whatsappUrl } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 import {
   getSpecialtyCategory,
@@ -14,7 +15,14 @@ import {
   type WaitlistFormValues,
   type WaitlistRole,
 } from "@/lib/waitlist-validation";
-import { ArrowRight, CheckCircle2, Plus, Trash2, X } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  MessageCircle,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 
 const specialtyExamples = [
   { name: "General groceries", category: "General groceries" },
@@ -87,6 +95,8 @@ export function Waitlist() {
       phone: true,
       email: true,
       city: true,
+      customerFirstPurchase: role === "customer",
+      shopperKnownPlace: role === "shopper",
       marketSpecialties: role === "shopper",
     });
 
@@ -137,7 +147,18 @@ export function Waitlist() {
   }
 
   function handleChange(field: keyof WaitlistFormValues, value: string) {
-    const nextValues = { ...values, [field]: value };
+    const nextValues: WaitlistFormValues = { ...values, [field]: value };
+
+    if (field === "shopperKnownPlace") {
+      nextValues.marketSpecialties = values.marketSpecialties.map(
+        (entry, index) =>
+          index === 0 &&
+          (!entry.market.trim() || entry.market === values.shopperKnownPlace)
+            ? { ...entry, market: value }
+            : entry
+      );
+    }
+
     setValues(nextValues);
     setSubmitError("");
 
@@ -277,7 +298,10 @@ export function Waitlist() {
   }
 
   return (
-    <section id="waitlist" className="px-4 py-14 sm:px-6 sm:py-24">
+    <section
+      id="waitlist"
+      className="scroll-mt-24 px-4 py-14 sm:px-6 sm:py-24"
+    >
       <div className="mx-auto max-w-2xl">
         <div className="text-center">
           <span className="font-mono text-xs font-semibold uppercase tracking-widest text-[var(--terracotta)]">
@@ -287,6 +311,23 @@ export function Waitlist() {
             Be among the first
             <span className="italic"> to use ReSuply.</span>
           </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[var(--ink)]/65">
+            Join the waitlist to get early access when ReSuply launches in
+            Lagos, Abuja, and other major cities.
+          </p>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[var(--ink)]/55">
+            Early users will be among the first to access trusted local shoppers
+            for markets, supermarkets, pharmacies and wellness stores, malls,
+            gift shops, fashion/fabric markets, and office supply stores.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Button asChild variant="outline" size="sm">
+              <a href={whatsappUrl}>
+                <MessageCircle className="size-4" />
+                Chat with us on WhatsApp
+              </a>
+            </Button>
+          </div>
         </div>
 
         <div className="mt-8 rounded-3xl border border-[var(--ink)]/10 bg-white p-5 shadow-sm sm:mt-10 sm:p-10">
@@ -336,11 +377,75 @@ export function Waitlist() {
                   >
                     <span className="sm:hidden">Earn as shopper</span>
                     <span className="hidden sm:inline">
-                      I want to earn as a shopper
+                      I want to earn as a personal shopper
                     </span>
                   </button>
                 </div>
               </div>
+
+              {role === "customer" ? (
+                <div className="rounded-2xl border border-[var(--market-green)]/15 bg-[var(--sage)]/45 p-4 sm:p-5">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="customerFirstPurchase">
+                      What would you likely use ReSuply to buy first?
+                    </Label>
+                    <Input
+                      id="customerFirstPurchase"
+                      name="customerFirstPurchase"
+                      value={values.customerFirstPurchase}
+                      onBlur={() => handleBlur("customerFirstPurchase")}
+                      onChange={(e) =>
+                        handleChange("customerFirstPurchase", e.target.value)
+                      }
+                      placeholder="e.g. foodstuff, fabric, wellness items, office supplies"
+                      {...inputState("customerFirstPurchase")}
+                    />
+                    <p className="text-xs leading-relaxed text-[var(--ink)]/55">
+                      Send your shopping list and let a trusted local shopper
+                      handle the rest.
+                    </p>
+                    <FieldError
+                      id="customerFirstPurchase-error"
+                      message={
+                        touched.customerFirstPurchase
+                          ? errors.customerFirstPurchase
+                          : undefined
+                      }
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-[var(--terracotta)]/20 bg-[var(--cream)] p-4 sm:p-5">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="shopperKnownPlace">
+                      Which market, supermarket, pharmacy, mall, or store do you
+                      know very well?
+                    </Label>
+                    <Input
+                      id="shopperKnownPlace"
+                      name="shopperKnownPlace"
+                      value={values.shopperKnownPlace}
+                      onBlur={() => handleBlur("shopperKnownPlace")}
+                      onChange={(e) =>
+                        handleChange("shopperKnownPlace", e.target.value)
+                      }
+                      placeholder="e.g. Mile 12 Market, Wuse Market, Shoprite"
+                      {...inputState("shopperKnownPlace")}
+                    />
+                    <p className="text-xs leading-relaxed text-[var(--ink)]/55">
+                      Turn your local market and store knowledge into income.
+                    </p>
+                    <FieldError
+                      id="shopperKnownPlace-error"
+                      message={
+                        touched.shopperKnownPlace
+                          ? errors.shopperKnownPlace
+                          : undefined
+                      }
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
                 <div className="flex flex-col gap-2">
@@ -646,7 +751,7 @@ export function Waitlist() {
                   ? "Saving..."
                   : role === "customer"
                     ? "Join the Waitlist"
-                    : "Apply to Become a Shopper"}
+                    : "Earn as a Personal Shopper"}
                 <ArrowRight className="size-4" />
               </Button>
             </form>

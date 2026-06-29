@@ -11,8 +11,9 @@ import {
 const benefits = [
   {
     icon: ShoppingBasket,
-    title: "Shop local markets & stores",
-    detail: "From Mile 12 to your neighborhood pharmacy — all in one place.",
+    title: "Shop local markets, malls & stores",
+    detail:
+      "From Mile 12 to wellness stores, gift shops, fabric markets, and office supply stores.",
   },
   {
     icon: ShieldCheck,

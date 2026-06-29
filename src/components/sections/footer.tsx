@@ -31,7 +31,7 @@ export function Footer() {
             About
           </Link>
           <Link href="/#shoppers" className="transition-colors hover:text-white">
-            Become a Shopper
+            Earn as a Personal Shopper
           </Link>
           <Link href="/#waitlist" className="transition-colors hover:text-white">
             Join Waitlist

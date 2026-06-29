@@ -6,6 +6,7 @@ create table if not exists customers (
   email text not null unique,
   phone text not null,
   city text not null,
+  first_purchase_intent text,
   source text not null default 'landing_page',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -17,6 +18,7 @@ create table if not exists shoppers (
   email text not null unique,
   phone text not null,
   city text not null,
+  known_place_summary text,
   status text not null default 'pending',
   source text not null default 'landing_page',
   created_at timestamptz not null default now(),
@@ -59,6 +61,12 @@ create unique index if not exists specialties_name_unique
 alter table specialties
   add column if not exists category text not null default 'Other';
 
+alter table customers
+  add column if not exists first_purchase_intent text;
+
+alter table shoppers
+  add column if not exists known_place_summary text;
+
 create table if not exists shopper_market_specialties (
   id uuid primary key default gen_random_uuid(),
   shopper_market_id uuid not null references shopper_markets(id) on delete cascade,
@@ -74,6 +82,7 @@ create table if not exists launch_subscribers (
   phone text not null,
   city text not null,
   role text not null,
+  signup_context text,
   source text not null default 'landing_page',
   marketing_consent boolean not null default true,
   created_at timestamptz not null default now(),
@@ -82,6 +91,9 @@ create table if not exists launch_subscribers (
     role in ('customer', 'shopper')
   )
 );
+
+alter table launch_subscribers
+  add column if not exists signup_context text;
 
 create index if not exists customers_city_idx on customers (city);
 create index if not exists shoppers_city_status_idx on shoppers (city, status);

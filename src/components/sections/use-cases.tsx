@@ -1,10 +1,25 @@
 const useCases = [
-  { tag: "Foodstuff", desc: "Mile 12, Wuse, Oyingbo, or Garki Market runs" },
-  { tag: "Pharmacy", desc: "Prescription pickup & emergency medication" },
-  { tag: "Supermarket", desc: "Weekly groceries from your usual store" },
-  { tag: "Gifts", desc: "Last-minute gift shopping, handled with care" },
+  {
+    tag: "Markets",
+    desc: "Foodstuff, fabrics, and household items from local markets",
+  },
+  {
+    tag: "Pharmacy & wellness",
+    desc: "Pharmacy and wellness item pickup from trusted stores",
+  },
+  {
+    tag: "Supermarkets",
+    desc: "Groceries and household essentials from your usual store",
+  },
+  {
+    tag: "Malls & gifts",
+    desc: "Items from malls, gift shops, and neighborhood stores",
+  },
   { tag: "Office supplies", desc: "Stationery, printing, and small errands" },
-  { tag: "Fashion & fabric", desc: "Ankara, lace, and local tailoring stores" },
+  {
+    tag: "Fashion & fabric",
+    desc: "Ankara, lace, fabrics, and local fashion stores",
+  },
 ];
 
 export function UseCases() {

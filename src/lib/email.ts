@@ -9,6 +9,7 @@ type RegistrationEmailInput = {
   fullName: string;
   role: WaitlistRole;
   city: string;
+  signupContext: string;
 };
 
 type SignupNotificationInput = RegistrationEmailInput & {
@@ -71,13 +72,19 @@ export async function sendRegistrationEmail({
   fullName,
   role,
   city,
+  signupContext,
 }: RegistrationEmailInput) {
   const resend = getResend();
   const copy = getRegistrationCopy(role);
   const firstName = fullName.trim().split(/\s+/)[0] ?? "there";
   const safeFirstName = escapeHtml(firstName);
   const safeCity = escapeHtml(city);
+  const safeSignupContext = escapeHtml(signupContext);
   const siteUrl = "https://useresuply.com/";
+  const contextLabel =
+    role === "customer"
+      ? "What you may buy first"
+      : "Place you know very well";
 
   const { error } = await resend.emails.send({
     from: getSender(),
@@ -105,6 +112,10 @@ export async function sendRegistrationEmail({
               ${copy.next}
             </p>
 
+            <p style="margin: 0 0 54px; color: #555555; font-size: 18px; line-height: 1.45;">
+              <strong>${contextLabel}:</strong> ${safeSignupContext}
+            </p>
+
             <div style="text-align: center; margin: 0 0 76px;">
               <a href="${siteUrl}" style="display: inline-block; background: #2f6df6; color: #ffffff; text-decoration: none; border-radius: 4px; padding: 18px 44px; font-size: 20px;">
                 ${copy.button}
@@ -127,7 +138,7 @@ export async function sendRegistrationEmail({
         </div>
       </div>
     `,
-    text: `Hi ${firstName},\n\n${copy.body}\n\n${copy.next}\n\nCity: ${city}\n\nReSuply`,
+    text: `Hi ${firstName},\n\n${copy.body}\n\n${copy.next}\n\n${contextLabel}: ${signupContext}\nCity: ${city}\n\nReSuply`,
   });
 
   if (error) {
@@ -141,6 +152,7 @@ export async function sendSignupNotificationEmail({
   role,
   city,
   phone,
+  signupContext,
   marketSpecialties,
 }: SignupNotificationInput) {
   const resend = getResend();
@@ -150,6 +162,11 @@ export async function sendSignupNotificationEmail({
   const safeEmail = escapeHtml(email);
   const safePhone = escapeHtml(phone);
   const safeCity = escapeHtml(city);
+  const safeSignupContext = escapeHtml(signupContext);
+  const contextLabel =
+    role === "customer"
+      ? "Likely first purchase"
+      : "Strongest known place";
   const marketSpecialtyHtml =
     role === "shopper"
       ? `<div><strong>Market specialties:</strong><ul>${marketSpecialties
@@ -188,6 +205,7 @@ export async function sendSignupNotificationEmail({
         <p><strong>Phone:</strong> ${safePhone}</p>
         <p><strong>City:</strong> ${safeCity}</p>
         <p><strong>Role:</strong> ${role}</p>
+        <p><strong>${contextLabel}:</strong> ${safeSignupContext}</p>
         ${marketSpecialtyHtml}
       </div>
     `,
@@ -198,6 +216,7 @@ export async function sendSignupNotificationEmail({
       `Phone: ${phone}`,
       `City: ${city}`,
       `Role: ${role}`,
+      `${contextLabel}: ${signupContext}`,
       role === "shopper" ? `Market specialties: ${marketSpecialtyText}` : "",
     ]
       .filter(Boolean)

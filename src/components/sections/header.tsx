@@ -25,7 +25,7 @@ export function Header() {
             How it works
           </Link>
           <Link href="/#shoppers" className="transition-colors hover:text-[var(--ink)]">
-            Become a shopper
+            Earn as a shopper
           </Link>
           <Link href="/#trust" className="transition-colors hover:text-[var(--ink)]">
             Trust &amp; safety
@@ -37,7 +37,7 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/#waitlist">Become a Shopper</Link>
+            <Link href="/#shoppers">Earn as a Personal Shopper</Link>
           </Button>
           <Button asChild size="sm" className="px-4 text-sm sm:px-5">
             <Link href="/#waitlist">Join the Waitlist</Link>

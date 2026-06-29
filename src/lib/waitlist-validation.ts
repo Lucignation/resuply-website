@@ -20,6 +20,8 @@ export type WaitlistFormValues = {
   phone: string;
   email: string;
   city: string;
+  customerFirstPurchase: string;
+  shopperKnownPlace: string;
   marketSpecialties: ShopperMarketSpecialty[];
 };
 
@@ -32,6 +34,8 @@ export const initialWaitlistValues: WaitlistFormValues = {
   phone: "",
   email: "",
   city: "",
+  customerFirstPurchase: "",
+  shopperKnownPlace: "",
   marketSpecialties: [{ market: "", specialties: "" }],
 };
 
@@ -225,6 +229,38 @@ function validateMarketSpecialties(entries: ShopperMarketSpecialty[]) {
   return undefined;
 }
 
+function validateCustomerFirstPurchase(value: string) {
+  const normalized = normalizeLabel(value);
+
+  if (!normalized) {
+    return "Tell us what you would likely use ReSuply to buy first.";
+  }
+
+  if (normalized.length < 3) {
+    return "Your answer should be at least 3 characters.";
+  }
+
+  return undefined;
+}
+
+function validateShopperKnownPlace(value: string) {
+  const normalized = normalizeLabel(value);
+
+  if (!normalized) {
+    return "Enter a market, supermarket, pharmacy, mall, or store you know well.";
+  }
+
+  if (normalized.length < 3) {
+    return "The place name should be at least 3 characters.";
+  }
+
+  if (["lagos", "abuja"].includes(normalized.toLowerCase())) {
+    return "Enter a specific place you know well, not just a city.";
+  }
+
+  return undefined;
+}
+
 export function validateWaitlistForm(
   values: WaitlistFormValues,
   role: WaitlistRole
@@ -256,7 +292,23 @@ export function validateWaitlistForm(
     errors.city = "City name is too short.";
   }
 
-  if (role === "shopper") {
+  if (role === "customer") {
+    const customerFirstPurchaseError = validateCustomerFirstPurchase(
+      values.customerFirstPurchase
+    );
+
+    if (customerFirstPurchaseError) {
+      errors.customerFirstPurchase = customerFirstPurchaseError;
+    }
+  } else {
+    const shopperKnownPlaceError = validateShopperKnownPlace(
+      values.shopperKnownPlace
+    );
+
+    if (shopperKnownPlaceError) {
+      errors.shopperKnownPlace = shopperKnownPlaceError;
+    }
+
     const marketSpecialtiesError = validateMarketSpecialties(
       values.marketSpecialties
     );
