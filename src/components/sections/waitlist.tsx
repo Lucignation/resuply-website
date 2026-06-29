@@ -26,6 +26,7 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
+
 export function Waitlist() {
   const [role, setRole] = useState<WaitlistRole>("customer");
   const [values, setValues] =
