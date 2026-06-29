@@ -1,0 +1,187 @@
+import { Resend } from "resend";
+import type { WaitlistRole } from "@/lib/waitlist-validation";
+
+type RegistrationEmailInput = {
+  email: string;
+  fullName: string;
+  role: WaitlistRole;
+  city: string;
+};
+
+type SignupNotificationInput = RegistrationEmailInput & {
+  phone: string;
+  markets: string;
+};
+
+let resendClient: Resend | undefined;
+
+function getResend() {
+  if (resendClient) {
+    return resendClient;
+  }
+
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is not set.");
+  }
+
+  resendClient = new Resend(apiKey);
+  return resendClient;
+}
+
+function getSender() {
+  return process.env.EMAIL_FROM ?? "ReSuply <hello@useresuply.com>";
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function getRegistrationCopy(role: WaitlistRole) {
+  if (role === "shopper") {
+    return {
+      subject: "We received your ReSuply shopper application",
+      headline: "Welcome to ReSuply",
+      body: "Thanks for applying to become a ReSuply shopper. We have saved your details and the markets or stores you know, so we can review and categorize shoppers properly before launch.",
+      next: "We will contact you when shopper onboarding starts in your city.",
+      button: "Visit ReSuply",
+    };
+  }
+
+  return {
+    subject: "You are on the ReSuply waitlist",
+    headline: "Welcome to ReSuply",
+    body: "Thanks for joining the ReSuply waitlist. We have saved your details and will let you know when we launch in your city.",
+    next: "You will be among the first to hear when ReSuply opens for early users.",
+    button: "Visit ReSuply",
+  };
+}
+
+export async function sendRegistrationEmail({
+  email,
+  fullName,
+  role,
+  city,
+}: RegistrationEmailInput) {
+  const resend = getResend();
+  const copy = getRegistrationCopy(role);
+  const firstName = fullName.trim().split(/\s+/)[0] ?? "there";
+  const safeFirstName = escapeHtml(firstName);
+  const safeCity = escapeHtml(city);
+  const siteUrl = "https://useresuply.com/";
+
+  const { error } = await resend.emails.send({
+    from: getSender(),
+    to: email,
+    subject: copy.subject,
+    html: `
+      <div style="margin: 0; padding: 0; background: #f4f4f4; font-family: Arial, Helvetica, sans-serif;">
+        <div style="max-width: 760px; margin: 0 auto; padding: 24px 18px 32px;">
+          <div style="background: #ffffff; border: 1px solid #dedede; border-top: 8px solid #1f253d; padding: 54px 34px 44px;">
+            <div style="text-align: center;">
+              <div style="display: inline-block; width: 68px; height: 68px; border-radius: 0 42px 42px 42px; background: #1b4332; position: relative;">
+                <div style="width: 32px; height: 18px; border-radius: 100% 0 100% 0; background: #ffffff; margin: 34px 0 0 12px; transform: rotate(-28deg);"></div>
+              </div>
+              <h1 style="margin: 42px 0 72px; color: #555555; font-size: 36px; line-height: 1.2; font-weight: 800;">
+                ${copy.headline}
+              </h1>
+            </div>
+
+            <p style="margin: 0 0 34px; color: #555555; font-size: 22px; line-height: 1.45;">
+              Hello ${safeFirstName}!
+            </p>
+
+            <p style="margin: 0 0 8px; color: #555555; font-size: 22px; line-height: 1.45;">
+              ${copy.body}
+            </p>
+            <p style="margin: 0 0 54px; color: #555555; font-size: 22px; line-height: 1.45;">
+              ${copy.next}
+            </p>
+
+            <div style="text-align: center; margin: 0 0 76px;">
+              <a href="${siteUrl}" style="display: inline-block; background: #2f6df6; color: #ffffff; text-decoration: none; border-radius: 4px; padding: 18px 44px; font-size: 20px;">
+                ${copy.button}
+              </a>
+            </div>
+
+            <p style="margin: 0 0 32px; color: #555555; font-size: 19px; line-height: 1.5;">
+              Best regards,
+            </p>
+            <p style="margin: 0; color: #555555; font-size: 19px; line-height: 1.5;">
+              The ReSuply Team<br />
+              <a href="${siteUrl}" style="color: #2f6df6;">useresuply.com</a>
+            </p>
+          </div>
+
+          <p style="margin: 26px 0 0; text-align: center; color: #999999; font-size: 15px; line-height: 1.5;">
+            ReSuply, Lagos and Abuja, Nigeria<br />
+            You received this email because you signed up for ReSuply in ${safeCity}.
+          </p>
+        </div>
+      </div>
+    `,
+    text: `Hi ${firstName},\n\n${copy.body}\n\n${copy.next}\n\nCity: ${city}\n\nReSuply`,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function sendSignupNotificationEmail({
+  email,
+  fullName,
+  role,
+  city,
+  phone,
+  markets,
+}: SignupNotificationInput) {
+  const resend = getResend();
+  const recipient =
+    process.env.SIGNUP_NOTIFICATION_EMAIL ?? "resuplytech@gmail.com";
+  const safeFullName = escapeHtml(fullName);
+  const safeEmail = escapeHtml(email);
+  const safePhone = escapeHtml(phone);
+  const safeCity = escapeHtml(city);
+  const safeMarkets = escapeHtml(markets);
+  const marketLine =
+    role === "shopper" ? `<p><strong>Markets:</strong> ${safeMarkets}</p>` : "";
+
+  const { error } = await resend.emails.send({
+    from: getSender(),
+    to: recipient,
+    subject: `New ReSuply ${role} signup`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #211d1a;">
+        <h1>New ReSuply ${role} signup</h1>
+        <p><strong>Name:</strong> ${safeFullName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Phone:</strong> ${safePhone}</p>
+        <p><strong>City:</strong> ${safeCity}</p>
+        <p><strong>Role:</strong> ${role}</p>
+        ${marketLine}
+      </div>
+    `,
+    text: [
+      `New ReSuply ${role} signup`,
+      `Name: ${fullName}`,
+      `Email: ${email}`,
+      `Phone: ${phone}`,
+      `City: ${city}`,
+      `Role: ${role}`,
+      role === "shopper" ? `Markets: ${markets}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
