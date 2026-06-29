@@ -59,18 +59,18 @@ export function Hero() {
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-4">
-            <Button asChild size="lg">
+            <Button asChild className="text-base">
               <a href="#waitlist">
                 Join the Waitlist <ArrowRight className="size-4" />
               </a>
             </Button>
-            <Button asChild size="lg" variant="outline">
+            <Button asChild variant="outline" className="text-base">
               <a href={contactHref} onClick={handleContactClick}>
                 <Mail className="size-4" />
                 Contact ReSuply
               </a>
             </Button>
-            <Button asChild size="lg" variant="ghost">
+            <Button asChild variant="ghost" className="text-base">
               <a href="#shoppers">Earn as a Personal Shopper</a>
             </Button>
           </div>
