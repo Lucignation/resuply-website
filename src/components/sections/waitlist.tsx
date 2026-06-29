@@ -277,19 +277,19 @@ export function Waitlist() {
   }
 
   return (
-    <section id="waitlist" className="px-6 py-24">
+    <section id="waitlist" className="px-4 py-14 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-2xl">
         <div className="text-center">
           <span className="font-mono text-xs font-semibold uppercase tracking-widest text-[var(--terracotta)]">
             Join us
           </span>
-          <h2 className="mt-4 font-display text-4xl font-semibold leading-tight tracking-tight text-[var(--ink)] sm:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-semibold leading-tight tracking-tight text-[var(--ink)] sm:text-5xl">
             Be among the first
             <span className="italic"> to use ReSuply.</span>
           </h2>
         </div>
 
-        <div className="mt-10 rounded-3xl border border-[var(--ink)]/10 bg-white p-8 shadow-sm sm:p-10">
+        <div className="mt-8 rounded-3xl border border-[var(--ink)]/10 bg-white p-5 shadow-sm sm:mt-10 sm:p-10">
           {submitted ? (
             <div className="flex flex-col items-center py-8 text-center">
               <CheckCircle2 className="size-12 text-[var(--market-green)]" />
@@ -305,38 +305,44 @@ export function Waitlist() {
             <form
               onSubmit={handleSubmit}
               noValidate
-              className="flex flex-col gap-6"
+              className="flex flex-col gap-5 sm:gap-6"
             >
               <div className="flex justify-center">
-                <div className="inline-flex rounded-full border border-[var(--ink)]/12 bg-[var(--cream)] p-1">
+                <div className="grid w-full grid-cols-2 rounded-full border border-[var(--ink)]/12 bg-[var(--cream)] p-1 sm:inline-grid sm:max-w-xl">
                   <button
                     type="button"
                     onClick={() => handleRoleChange("customer")}
                     className={cn(
-                      "rounded-full px-5 py-2 text-sm font-semibold transition-colors",
+                      "min-h-11 rounded-full px-3 py-2 text-sm font-semibold leading-tight transition-colors sm:px-5",
                       role === "customer"
                         ? "bg-[var(--market-green)] text-white"
                         : "text-[var(--ink)]/60 hover:text-[var(--ink)]"
                     )}
                   >
-                    I want to shop with ReSuply
+                    <span className="sm:hidden">Shop with ReSuply</span>
+                    <span className="hidden sm:inline">
+                      I want to shop with ReSuply
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleRoleChange("shopper")}
                     className={cn(
-                      "rounded-full px-5 py-2 text-sm font-semibold transition-colors",
+                      "min-h-11 rounded-full px-3 py-2 text-sm font-semibold leading-tight transition-colors sm:px-5",
                       role === "shopper"
                         ? "bg-[var(--terracotta)] text-white"
                         : "text-[var(--ink)]/60 hover:text-[var(--ink)]"
                     )}
                   >
-                    I want to earn as a shopper
+                    <span className="sm:hidden">Earn as shopper</span>
+                    <span className="hidden sm:inline">
+                      I want to earn as a shopper
+                    </span>
                   </button>
                 </div>
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="fullName">Full name</Label>
                   <Input
@@ -372,7 +378,7 @@ export function Waitlist() {
                 </div>
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="email">Email address</Label>
                   <Input
@@ -409,8 +415,8 @@ export function Waitlist() {
               </div>
 
               {role === "shopper" && (
-                <div className="rounded-2xl border border-[var(--ink)]/10 bg-[var(--cream)]/55 p-5">
-                  <div className="mb-5">
+                <div className="rounded-2xl border border-[var(--ink)]/10 bg-[var(--cream)]/55 p-4 sm:p-5">
+                  <div className="mb-4 sm:mb-5">
                     <p className="text-sm font-semibold text-[var(--ink)]">
                       Shopper matching details
                     </p>
@@ -420,7 +426,7 @@ export function Waitlist() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-3 sm:gap-4">
                     {values.marketSpecialties.map((entry, index) => (
                       <div key={index}>
                         {(() => {
@@ -436,13 +442,13 @@ export function Waitlist() {
                           return (
                             <div
                               className={cn(
-                                "rounded-2xl border bg-white p-4",
+                                "rounded-2xl border bg-white p-3 sm:p-4",
                                 marketError || specialtyError
                                   ? "border-[var(--terracotta-dark)]/45"
                                   : "border-[var(--ink)]/10"
                               )}
                             >
-                              <div className="mb-4 flex items-center justify-between gap-3">
+                              <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
                                 <p className="text-sm font-semibold text-[var(--ink)]">
                                   Market / Store {index + 1}
                                 </p>
@@ -498,7 +504,7 @@ export function Waitlist() {
 
                                 <div className="flex flex-col gap-2">
                                   <Label htmlFor={`specialties-${index}`}>
-                                    Items you are best at buying there
+                                    Items you buy best there
                                   </Label>
 
                                   {parseSpecialtyNames(entry.specialties)
@@ -509,10 +515,12 @@ export function Waitlist() {
                                       ).map((specialty) => (
                                         <span
                                           key={specialty}
-                                          className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[var(--market-green)]/20 bg-[var(--sage)] px-3 py-1 text-sm font-semibold text-[var(--market-green)]"
+                                          className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full border border-[var(--market-green)]/20 bg-[var(--sage)] px-3 py-1 text-sm font-semibold text-[var(--market-green)]"
                                         >
-                                          {specialty}
-                                          <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--market-green)]/65">
+                                          <span className="min-w-0 truncate">
+                                            {specialty}
+                                          </span>
+                                          <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--market-green)]/65 max-[380px]:hidden">
                                             {getSpecialtyCategory(specialty)}
                                           </span>
                                           <button
@@ -548,7 +556,7 @@ export function Waitlist() {
                                         e.target.value
                                       )
                                     }
-                                    placeholder="Type an item and press Enter"
+                                    placeholder="Type item, press Enter"
                                     aria-invalid={Boolean(specialtyError)}
                                     aria-describedby={
                                       specialtyError
@@ -571,10 +579,10 @@ export function Waitlist() {
                                             specialty.name
                                           )
                                         }
-                                        className="inline-flex items-center gap-2 rounded-full border border-[var(--market-green)]/15 bg-[var(--sage)]/60 px-3 py-1 text-xs font-medium text-[var(--market-green)] transition hover:border-[var(--market-green)]/40 hover:bg-[var(--sage)]"
+                                        className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[var(--market-green)]/15 bg-[var(--sage)]/60 px-3 py-1 text-sm font-medium text-[var(--market-green)] transition hover:border-[var(--market-green)]/40 hover:bg-[var(--sage)] sm:text-xs"
                                       >
                                         {specialty.name}
-                                        <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--market-green)]/65">
+                                        <span className="hidden rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--market-green)]/65 sm:inline-flex">
                                           {specialty.category}
                                         </span>
                                       </button>
@@ -598,7 +606,7 @@ export function Waitlist() {
                     <button
                       type="button"
                       onClick={addMarketSpecialty}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[var(--market-green)]/25 bg-white px-4 text-sm font-semibold text-[var(--market-green)] transition hover:border-[var(--market-green)]/50 hover:bg-[var(--sage)]"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--market-green)]/25 bg-white px-3 py-2 text-sm font-semibold text-[var(--market-green)] transition hover:border-[var(--market-green)]/50 hover:bg-[var(--sage)] sm:px-4"
                     >
                       <Plus className="size-4" />
                       Add another market/store

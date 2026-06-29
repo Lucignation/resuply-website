@@ -21,18 +21,41 @@ const mono = JetBrains_Mono({
   weight: ["400", "500", "600"],
 });
 
+const siteTitle =
+  "ReSuply | Shop from anywhere. Trust the local hand that knows the market.";
+const siteDescription =
+  "ReSuply connects you with verified personal shoppers who buy items from markets, supermarkets, pharmacies, and local stores near you. Join the waitlist for Lagos and Abuja.";
+const previewImage = "/resuply-share-preview.jpeg";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://useresuply.com"),
-  title: "ReSuply — Shop from anywhere. Trust the local hand that knows the market.",
-  description:
-    "ReSuply connects you with verified personal shoppers who buy items from markets, supermarkets, pharmacies and local stores near you — and earn an income doing it.",
+  applicationName: "ReSuply",
+  title: siteTitle,
+  description: siteDescription,
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "ReSuply",
-    description:
-      "Shop from anywhere with trusted local shoppers who know the market.",
-    url: "https://useresuply.com",
+    title: siteTitle,
+    description: siteDescription,
+    url: "/",
     siteName: "ReSuply",
-    images: ["/resuply-logo-green.jpeg"],
+    locale: "en_NG",
+    type: "website",
+    images: [
+      {
+        url: previewImage,
+        width: 1200,
+        height: 630,
+        alt: "ReSuply - shop from anywhere with trusted local shoppers.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: [previewImage],
   },
 };
 
