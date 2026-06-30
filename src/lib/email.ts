@@ -1,5 +1,4 @@
 import { Resend } from "resend";
-import { supportEmail } from "@/lib/contact";
 import type { ContactFormValues } from "@/lib/contact-validation";
 import type {
   CategorizedShopperMarketSpecialty,
@@ -20,6 +19,8 @@ type SignupNotificationInput = RegistrationEmailInput & {
 };
 
 type ContactMessageInput = ContactFormValues;
+
+const contactNotificationEmail = "resuplytech@gmail.com";
 
 let resendClient: Resend | undefined;
 
@@ -42,8 +43,13 @@ function getSender() {
   return process.env.EMAIL_FROM ?? "ReSuply <hello@useresuply.com>";
 }
 
-function getContactRecipient() {
-  return process.env.CONTACT_NOTIFICATION_EMAIL ?? supportEmail;
+function getContactRecipients() {
+  const configuredEmail = process.env.CONTACT_NOTIFICATION_EMAIL?.trim();
+  const recipients = configuredEmail
+    ? [configuredEmail, contactNotificationEmail]
+    : [contactNotificationEmail];
+
+  return Array.from(new Set(recipients));
 }
 
 function escapeHtml(value: string) {
@@ -244,7 +250,7 @@ export async function sendContactMessageEmail({
   message,
 }: ContactMessageInput) {
   const resend = getResend();
-  const recipient = getContactRecipient();
+  const recipients = getContactRecipients();
   const safeFullName = escapeHtml(fullName);
   const safePhone = escapeHtml(phone);
   const safeEmail = escapeHtml(email);
@@ -254,7 +260,7 @@ export async function sendContactMessageEmail({
 
   const { error } = await resend.emails.send({
     from: getSender(),
-    to: recipient,
+    to: recipients,
     subject: `New ReSuply contact message from ${fullName}`,
     html: `
       <div style="font-family: Arial, sans-serif; color: #211d1a;">

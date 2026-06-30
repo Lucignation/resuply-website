@@ -13,7 +13,7 @@ DATABASE_URL="postgresql://USER:PASSWORD@HOST/resuply_core?sslmode=require"
 RESEND_API_KEY="re_xxxxxxxxx"
 EMAIL_FROM="ReSuply <hello@useresuply.com>"
 SIGNUP_NOTIFICATION_EMAIL="resuplytech@gmail.com"
-CONTACT_NOTIFICATION_EMAIL="support@useresuply.com"
+CONTACT_NOTIFICATION_EMAIL="resuplytech@gmail.com"
 ```
 
 ## 2. Run the schema
